@@ -4,132 +4,111 @@ generator client {
 
 datasource db {
   provider  = "postgresql"
-  url       = env("POSTGRES_PRISMA_URL") // uses connection pooling
-  directUrl = env("POSTGRES_URL_NON_POOLING") // uses a direct connection
+  url       = env("POSTGRES_PRISMA_URL")
+  directUrl = env("POSTGRES_URL_NON_POOLING")
 }
 
-model JobPosting {
-  id          String  @id @default(cuid())
-  title       String
-  description String?
-  linkedinUrl String?
-  status      String  @default("Open")
+enum UserRole {
+  RECRUITER
+  MANAGER
+  INTERVIEWER
+}
+
+enum CandidateStatus {
+  BACKLOG
+  PROCESSING
+  ACTIVE
+  ON_HOLD
+  HIRED
+  REJECTED
+}
+
+model User {
+  id    String   @id @default(cuid())
+  name  String
+  email String   @unique
+  role  UserRole @default(RECRUITER)
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
-  deletedAt DateTime?
 
-  candidates Candidate[]
-
-  processGroupId String
-  processGroup   ProcessGroup @relation(fields: [processGroupId], references: [id])
-
-  metadata Json @default("{}")
+  ownedProcesses Process[] @relation("ProcessOwner")
 }
 
-model Persona {
-  id String @id @default(cuid())
-
-  name    String
-  surname String
-
-  location String?
-
-  email String @unique
-
-  linkedinUrl String?
+model StrategicContext {
+  id                Int      @id @default(1)
+  strategicVision   String
+  companyMission    String
+  coreValues        String[]
+  communicationTone String
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
-  deletedAt DateTime?
 
-  candidates Candidate[]
-
-  metadata Json @default("{}")
+  @@map("strategic_contexts")
 }
 
 model Candidate {
-  id String @id @default(cuid())
+  id         String          @id @default(cuid())
+  fullName   String
+  title      String?
+  email      String?
+  phone      String?
+  location   String?
+  resumeText String?
+  cvFilePath String?
+  status     CandidateStatus @default(BACKLOG)
 
-  notes     String?
-  cvFileKey String?
+  currentProcessId String?
+  currentProcess   Process? @relation(fields: [currentProcessId], references: [id])
+
+  history  Json @default("[]")
+  metadata Json @default("{}")
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
   deletedAt DateTime?
 
-  personaId String
-  persona   Persona @relation(fields: [personaId], references: [id])
-
-  jobId String
-  job   JobPosting @relation(fields: [jobId], references: [id])
-
-  currentStepId String
-  rating String?
-
-  source String?
-
-  steps         ProcessStep[] @relation("CandidateSteps")
-
-  metadata Json @default("{}")
+  assignments       ProcessCandidate[]
+  hiredForProcesses Process[]          @relation("HiredCandidate")
 }
 
-model ProcessGroup {
-  id String @id @default(cuid())
+model Process {
+  id             String   @id @default(cuid())
+  title          String
+  jobDescription String?
+  stage          Int      @default(0)
 
-  name String
+  ownerId String
+  owner   User    @relation("ProcessOwner", fields: [ownerId], references: [id])
+
+  collaboratorIds String[] @default([])
+
+  interviewPlan       Json @default("[]")
+  candidatesInProcess Json @default("{}")
+  interviewFeedback   Json @default("{}")
+
+  hiredCandidateId String?
+  hiredCandidate   Candidate? @relation("HiredCandidate", fields: [hiredCandidateId], references: [id])
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
   deletedAt DateTime?
 
-  jobs         JobPosting[]
-  steps        ProcessStepTemplate[]
-  processSteps ProcessStep[]
-
-  metadata Json @default("{}")
+  candidateAssignments ProcessCandidate[]
 }
 
-model ProcessStepTemplate {
+model ProcessCandidate {
   id String @id @default(cuid())
 
-  order Int
-  name  String
-
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-  deletedAt DateTime?
-
-  groupId String
-  group   ProcessGroup @relation(fields: [groupId], references: [id])
-
-  steps ProcessStep[]
-
-  metadata Json @default("{}")
-}
-
-model ProcessStep {
-  id String @id @default(cuid())
-
-  status String @default("Pending")
-
-  notes String?
-  date  DateTime?
-
-  rating String?
-
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-  deletedAt DateTime?
-
-  groupId String
-  group   ProcessGroup @relation(fields: [groupId], references: [id])
-
-  templateId String
-  template   ProcessStepTemplate @relation(fields: [templateId], references: [id])
+  processId String
+  process   Process @relation(fields: [processId], references: [id])
 
   candidateId String
-  candidate   Candidate @relation("CandidateSteps", fields: [candidateId], references: [id])
+  candidate   Candidate @relation(fields: [candidateId], references: [id])
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
   metadata Json @default("{}")
 }
