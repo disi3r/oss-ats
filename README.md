@@ -1,32 +1,37 @@
-# Open Source ATS Platform
+# Panel de Reclutamiento Inteligente
 
 ![License: GPL v3](https://img.shields.io/badge/License-GPLv3-blue.svg)
 
 ![Open Source ATS Platform](./src/public/ats-oss.png)
 
-This project aims to be a simple, open-source Applicant Tracking System (ATS) platform 
-that can be self-hosted and customized to your needs.
+Este repositorio es una adaptación del proyecto open source `oss-ats` para construir el
+**Panel de Reclutamiento Inteligente**, una plataforma moderna para reclutadores que
+aprovecha flujos automatizados con n8n y análisis generativo a través de la API de
+Google Gemini (orquestada externamente).
 
 ## Demo
 
 A live demo of the project can be found [here](https://demo.ats-oss.org/), the admin
 password is `admin`.
 
-## Features
+## Funcionalidades Destacadas
 
-- Job posting management
-- Candidate tracking
-- Application process workflow
-- Document storage (only CVs for now)
-- Simple global authentication system (will add additional auth providers later on)
+- Gestión de contexto estratégico de la compañía (visión, misión, valores y tono).
+- Registro y seguimiento de candidatos con historial JSON y estados personalizables.
+- Procesos de selección dinámicos con tableros Kanban derivados de planes de entrevista.
+- Flujo "Añadir Perfil con IA" que sube CVs, crea candidatos en estado `processing` y
+  delega el enriquecimiento de información a un workflow de n8n.
+- Captura de feedback estructurado de entrevistadores vinculado a cada proceso.
+- Autenticación basada en roles (Reclutador, Gerente de Área y Entrevistador) para
+  asegurar el acceso a los diferentes módulos.
 
-## Tech Stack
+## Stack Tecnológico
 
-- Next.js with TypeScript
-- PostgreSQL database, with Prisma ORM
-- Docker Compose for local development
-- Antd for UI components
-- Vercel's Blob Storage for file storage (will add compatibility with S3-compatible storage)
+- Next.js con TypeScript y Tailwind CSS.
+- PostgreSQL como base de datos con Prisma ORM.
+- NextAuth.js (o proveedor nativo) para autenticación y control de roles.
+- n8n como motor de automatización y orquestación de Gemini.
+- Almacenamiento temporal de CVs gestionado por Next.js antes de delegar a n8n.
 
 ## Local Development
 
@@ -56,6 +61,24 @@ You will need to have `pnpm` and `docker-compose` installed on your machine.
   ```bash
   pnpm dev
   ```
+
+## Guías Adicionales
+
+- [`Guia-Deploy.md`](./Guia-Deploy.md): guía paso a paso para desplegar la aplicación en un VPS.
+
+## Contribuciones Recientes
+
+Las siguientes implementaciones forman parte de la personalización del Panel de
+Reclutamiento Inteligente:
+
+- Rediseño del esquema de Prisma para soportar contexto estratégico, candidatos y
+  procesos con datos estructurados en JSON.
+- Endpoints protegidos por roles para gestionar contexto, candidatos, procesos y
+  feedback, además del callback seguro proveniente de n8n.
+- Flujo de subida de CVs que dispara un webhook en n8n y recibe actualizaciones a través
+  de callbacks autenticados.
+- Componentes React con Tailwind para los módulos de Contexto Estratégico, Kanban de
+  entrevistas y formulario de feedback.
 
 ## License
 
