@@ -34,7 +34,8 @@
     "react": "^18",
     "react-dom": "^18",
     "react-hook-form": "^7.48.2",
-    "zod": "^3.22.4"
+    "zod": "^3.22.4",
+    "formidable": "^3.5.1"
   },
   "devDependencies": {
     "@snaplet/copycat": "^5.1.0",
